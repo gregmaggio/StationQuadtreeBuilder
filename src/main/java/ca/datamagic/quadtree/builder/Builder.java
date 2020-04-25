@@ -277,7 +277,7 @@ public class Builder {
 	        	System.out.println("buildStationsQuadtree...");
 	        	findStationBounds();	        
 		        buildStationsQuadtree();
-	        }	        	        
+	        }
 		} catch (Throwable t) {
 			System.out.println("Exception: " + t.getMessage());
 			t.printStackTrace();
