@@ -66,9 +66,7 @@ public class Map extends JFrame implements ActionListener, MouseListener, MouseM
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(toolBar, BorderLayout.PAGE_START);
 		getContentPane().add(BorderLayout.CENTER, this.mapBean);
-		pack();
-		setVisible(true);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		pack();		
 	}
 	
 	@Override
@@ -186,7 +184,9 @@ public class Map extends JFrame implements ActionListener, MouseListener, MouseM
 			Quad tree = (Quad)inputStream.readObject();
 			inputStream.close();
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			new Map(tree);			
+			Map map = new Map(tree);
+			map.setVisible(true);
+			map.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		} catch (Throwable t) {
 			System.out.println("Exception: " + t.getMessage());
 			t.printStackTrace();
