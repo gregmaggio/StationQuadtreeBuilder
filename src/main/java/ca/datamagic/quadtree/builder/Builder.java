@@ -7,7 +7,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.text.MessageFormat;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -203,6 +205,7 @@ public class Builder {
 	/**
 	 * @param args
 	 */
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) {
 		try {
 			String currentDir = System.getProperty("user.dir");
@@ -231,6 +234,7 @@ public class Builder {
 	        boolean loadTimeZones = false;
 	        boolean loadNOAAForecastPage = false;
 	        boolean buildStationsQuadtree = false;
+	        boolean buildStationsJson = true;
 	        boolean showHelp = false;
 	        if (args != null) {
 		        for (int ii = 0; ii < args.length; ) {
@@ -243,6 +247,8 @@ public class Builder {
 		        		loadNOAAForecastPage = true;
 		        	} else if (arg.compareToIgnoreCase("--buildStationsQuadtree") == 0) {
 		        		buildStationsQuadtree = true;
+		        	} else if (arg.compareToIgnoreCase("--buildStationsJson") == 0) {
+		        		buildStationsJson = true;
 		        	} else if (arg.compareToIgnoreCase("--help") == 0) {
 		        		showHelp = true;
 		        	}
@@ -253,6 +259,7 @@ public class Builder {
 	        	System.out.println("loadTimeZones: java -cp stationquadtreebuilder.jar ca.datamagic.quadtree.builder.Builder --loadTimeZones");
 	        	System.out.println("loadNOAAForecastPage: java -cp stationquadtreebuilder.jar ca.datamagic.quadtree.builder.Builder --loadNOAAForecastPage");
 	        	System.out.println("buildStationsQuadtree: java -cp stationquadtreebuilder.jar ca.datamagic.quadtree.builder.Builder --buildStationsQuadtree");
+	        	System.out.println("buildStationsJson: java -cp stationquadtreebuilder.jar ca.datamagic.quadtree.builder.Builder --buildStationsJson");
 	        	return;
 	        }
 	        DOMConfigurator.configure(log4jFileName);
@@ -277,6 +284,27 @@ public class Builder {
 	        	System.out.println("buildStationsQuadtree...");
 	        	findStationBounds();	        
 		        buildStationsQuadtree();
+	        }
+	        // Step 5
+	        if (buildStationsJson) {
+	        	System.out.println("buildStationsJson...");
+	        	StationDAO stationDAO = new StationDAO();
+	    		Gson gson = new Gson();
+	    		StringBuffer buffer = new StringBuffer();
+	    		buffer.append("[");
+	    		for (int ii = 0; ii < stationDAO.size(); ii++) {
+	    			String stationId = stationDAO.getStationId(ii);
+	    			Station station = stationDAO.getStation(stationId);
+	    			String json = gson.toJson(station);
+	    			if (ii > 0) {
+	    				buffer.append(",");
+	    			}
+	    			buffer.append(json);
+	    		}
+	    		buffer.append("]");
+	    		FileOutputStream output = new FileOutputStream(MessageFormat.format("{0}/stations.json", BaseDAO.getDataPath()));
+	    		IOUtils.write(buffer, output);
+	    		output.close();
 	        }
 		} catch (Throwable t) {
 			System.out.println("Exception: " + t.getMessage());
